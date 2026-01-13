@@ -17,8 +17,13 @@ const doctors = [
 ];
 
 const carousel = document.getElementById("carousel");
+
 const CARD_GAP = 72;
-let offset = 0;
+const CENTER_Y = CARD_GAP;
+const SCALE_MIN = 0.94;
+const SCALE_MAX = 1.08;
+
+let progress = 0;
 
 // Create cards once
 const cards = doctors.map((doctor) => {
@@ -39,25 +44,33 @@ const cards = doctors.map((doctor) => {
 
 function update() {
   cards.forEach((card, index) => {
-    // continuous position
-    const y =
-      ((index * CARD_GAP + offset) % (CARD_GAP * cards.length)) -
-      CARD_GAP;
+    // base position per card
+    let y = (index * CARD_GAP + progress) % (CARD_GAP * cards.length);
 
-    card.style.transform = `translateX(-50%) translateY(${y}px) scale(0.94)`;
+    // normalize so we always have: top / middle / bottom
+    if (y < 0) y += CARD_GAP * cards.length;
 
-    // middle detection (± half gap)
-    if (Math.abs(y) < CARD_GAP / 2) {
-      card.classList.add("active");
-    } else {
-      card.classList.remove("active");
-    }
+    // shift up so middle sits at CENTER_Y
+    y -= CARD_GAP;
+
+    // scale interpolation based on distance to center
+    const distance = Math.abs(y - CENTER_Y);
+    const t = Math.min(distance / CARD_GAP, 1);
+    const scale = SCALE_MAX - (SCALE_MAX - SCALE_MIN) * t;
+
+    card.style.transform = `
+      translateX(-50%)
+      translateY(${y}px)
+      scale(${scale})
+    `;
+
+    card.style.zIndex = Math.round(100 - distance);
   });
 
-  offset += CARD_GAP;
+  progress += CARD_GAP;
 }
 
-// Initial layout
+// Initial paint
 update();
 
 // Animate
