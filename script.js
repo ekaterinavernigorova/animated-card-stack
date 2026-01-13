@@ -17,40 +17,48 @@ const doctors = [
 ];
 
 const carousel = document.getElementById("carousel");
-let currentIndex = 0;
+const CARD_GAP = 72;
+let offset = 0;
 
-function renderCards() {
-  carousel.innerHTML = "";
+// Create cards once
+const cards = doctors.map((doctor) => {
+  const card = document.createElement("div");
+  card.className = "card";
 
-  doctors.forEach((doctor, index) => {
-    const card = document.createElement("div");
-    card.className = "card";
+  card.innerHTML = `
+    <img src="${doctor.image}" alt="${doctor.name}" />
+    <div class="info">
+      <div class="name">${doctor.name}</div>
+      <div class="role">${doctor.specialty}</div>
+    </div>
+  `;
 
-    const position =
-      (index - currentIndex + doctors.length) % doctors.length;
+  carousel.appendChild(card);
+  return card;
+});
 
-    card.style.top = `${position * 72}px`;
+function update() {
+  cards.forEach((card, index) => {
+    // continuous position
+    const y =
+      ((index * CARD_GAP + offset) % (CARD_GAP * cards.length)) -
+      CARD_GAP;
 
-    if (position === 1) {
+    card.style.transform = `translateX(-50%) translateY(${y}px) scale(0.94)`;
+
+    // middle detection (± half gap)
+    if (Math.abs(y) < CARD_GAP / 2) {
       card.classList.add("active");
+    } else {
+      card.classList.remove("active");
     }
-
-    card.innerHTML = `
-      <img src="${doctor.image}" alt="${doctor.name}" />
-      <div class="info">
-        <div class="name">${doctor.name}</div>
-        <div class="role">${doctor.specialty}</div>
-      </div>
-    `;
-
-    carousel.appendChild(card);
   });
+
+  offset += CARD_GAP;
 }
 
-function nextSlide() {
-  currentIndex = (currentIndex + 1) % doctors.length;
-  renderCards();
-}
+// Initial layout
+update();
 
-renderCards();
-setInterval(nextSlide, 2500);
+// Animate
+setInterval(update, 2500);

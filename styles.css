@@ -54,9 +54,9 @@ body {
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
 
   transition:
-    transform 0.6s ease,
-    top 0.6s ease,
-    box-shadow 0.6s ease;
+  transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+  box-shadow 0.6s ease;
+
 }
 
 .card img {
