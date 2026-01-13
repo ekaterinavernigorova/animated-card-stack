@@ -19,11 +19,11 @@ const doctors = [
 const carousel = document.getElementById("carousel");
 
 const CARD_GAP = 72;
-const CENTER_Y = CARD_GAP;
 const SCALE_MIN = 0.94;
 const SCALE_MAX = 1.08;
 
-let progress = 0;
+// Each card starts in its own lane
+let positions = [0, CARD_GAP, CARD_GAP * 2];
 
 // Create cards once
 const cards = doctors.map((doctor) => {
@@ -43,19 +43,17 @@ const cards = doctors.map((doctor) => {
 });
 
 function update() {
+  positions = positions.map((y) => {
+    const nextY = y + CARD_GAP;
+    return nextY > CARD_GAP * 2 ? 0 : nextY;
+  });
+
   cards.forEach((card, index) => {
-    // base position per card
-    let y = (index * CARD_GAP + progress) % (CARD_GAP * cards.length);
+    const y = positions[index];
 
-    // normalize so we always have: top / middle / bottom
-    if (y < 0) y += CARD_GAP * cards.length;
-
-    // shift up so middle sits at CENTER_Y
-    y -= CARD_GAP;
-
-    // scale interpolation based on distance to center
-    const distance = Math.abs(y - CENTER_Y);
-    const t = Math.min(distance / CARD_GAP, 1);
+    // scale interpolation
+    const distanceFromCenter = Math.abs(y - CARD_GAP);
+    const t = Math.min(distanceFromCenter / CARD_GAP, 1);
     const scale = SCALE_MAX - (SCALE_MAX - SCALE_MIN) * t;
 
     card.style.transform = `
@@ -64,13 +62,11 @@ function update() {
       scale(${scale})
     `;
 
-    card.style.zIndex = Math.round(100 - distance);
+    card.style.zIndex = Math.round(100 - distanceFromCenter);
   });
-
-  progress += CARD_GAP;
 }
 
-// Initial paint
+// Initial render
 update();
 
 // Animate
